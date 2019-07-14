@@ -25,14 +25,15 @@ Challenge: stateful programming
 - JSX Segue
   - Declarative
   - EXAMPLE: transpiled output
-- Renderer Entry Point
-- Mutability
-  - Purity in respect to props
-  - Impurity in respect to local state
+- ReactComponents
+  - EXAMPLE: syntax
+- Entry Point
+  - EXAMPLE: ReactDOM
+- Constructing the "Virtual DOM"
+  - EXAMPLE: expanded element tree
 - Reconcilliation
-  - What is it?
-  - Diffing isn't free
-  - DEMO: Render/Commit phase
+  - Changing the react tree
+  - EXAMPLE: throwaway the tree
+- Fiber Objects
 
-Pitfalls
-Wrapping up
+End
