@@ -76,6 +76,7 @@ document.createElement("div");
 {
   "name": "div",
   "children": [],
+  ...
 }
 ```
 
@@ -110,7 +111,7 @@ Best practices for dealing with DOM state:
 - Have a default application state that matches the default DOM conditions
 - Interactions that mutate state should be applied to the DOM immediately from a single piece of code in the application
 - Observe state in the application and not in the DOM
-- Centralize application state (observers, finite state machines)
+- Centralize application state (observers, state machines)
 - Preserve state uniformly; i.e. a single save operation that updates the default DOM conditions
 
 ---
@@ -144,10 +145,13 @@ In React the Virtual DOM nodes are `ReactElement`s, plain JavaScript objects tha
 {
   type: 'Card', // function type denotes a React component
   props: {
-    title: 'Card title'
+    title: 'Hello world'
     children: [{
       type: 'button', // string type denotes a DOM node (props correspond to attributes)
-      props: {className: 'primary'}
+      props: {
+        className: 'primary',
+        children: 'Click me',
+      }
     }]
   }
 }
@@ -160,34 +164,31 @@ In React the Virtual DOM nodes are `ReactElement`s, plain JavaScript objects tha
 ^ JSX is syntatic sugar that once compiled becomes a regular JavaScript function call that evaluates to a JavaScript object
 
 ```html
-<PolarisComponent className="primary">Click me</PolarisComponent>
+<Card title="Hello world">
+  <button className="primary">Click me</button>
+</Card>
 ```
 
 ```js
 // compiles to
-React.createElement(
-  PolarisComponent,
-  {className: 'primary'},
-  'Click me'
-)
-
-// virtual DOM object representation
-{
-  type: 'PolarisComponent',
-  props: {className: 'primary', children: 'Click me'}
-}
+React.createElement(Card, {
+  title: "Hello world"
+},
+React.createElement("button", {
+  className: "primary"
+}, "Click me"));
 ```
 
 ---
 
 ^ Components take one argument — an object hash containing props
 
-^ Components are pure in respect to their props, but local mutation is fine
+^ Components are pure in respect to their props; local mutation is fine
 
 `ReactComponent`'s are small, reusable pieces of code that return `ReactElement`'s
 
 ```js
-function Card({showTitle}) {
+function Card({showTitle, children}) {
   let title = null;
 
   if (showTitle) {
@@ -197,7 +198,7 @@ function Card({showTitle}) {
   return (
     <>
       {title}
-      <button className="primary">Click me</button>
+      {children}
     </>
   );
 }
@@ -211,14 +212,14 @@ function Card({showTitle}) {
 
 ^ React repeats this process until it has a representation of the underlying DOM tag elements for every component on the page
 
-^ Objects are for illustrative purpose in reality the `type` is a symbol `$$typeof` (JSON can't include `Symbol()`, stops XSS attacks)
+^ Objects are for illustrative purpose, there are other properties and symbols `$$typeof` (JSON can't include `Symbol()`, stops XSS attacks)
 
 Components encapsulate element trees:
 
 ```js
 {
   type: PolarisButton, // ReactComponent type: evaluate the returned ReactElement
-  props: {color: 'primary', children: 'Hello world'}
+  props: {color: 'primary', children: 'Click me'}
 }
 
 // Resultant element tree
@@ -226,7 +227,7 @@ Components encapsulate element trees:
   type: 'button',
   props: {
     className: 'button button-primary',
-    children: {type: 'b', props: { children: 'Hello world' }}
+    children: {type: 'span', props: { children: 'Click me' }}
   }
 }
 ```
@@ -278,15 +279,45 @@ domContainer.appendChild(domNode);
 
 ^ In our case the host instance tree is the DOM
 
-^ A simplified version of React could blow away the existing tree and re-create it from scratch. This is slow and loses DOM state (focus, selection)
+^ State and/or prop changes in your component function will return a different tree of React elements
 
-^ If an element type in the same place in the tree matches between the previous and the next renders, React reuses the existing instance
+^ A simplified version of React could blow away the existing tree and re-create it from scratch. This is slow and would lose DOM state (focus, selection)
 
 > The process of figuring out what to do to the host instance tree in response to new information is sometimes called reconciliation.
 -- Dan Abramov
 
 ---
 
-On state or props updates your component function will return a different tree of React elements. React then needs to figure out how to efficiently update the UI to match the desired tree
+^ Efficiency one: React looks at the attributes of both, keeps the same underlying DOM node, and only updates the changed attributes
+
+# DOM elements of the same type
+
+```js
+
+```
+
+---
+
+^ Efficiency one: keep the same underlying DOM node and only update the changed attributes
+
+# DOM elements of the same type
+
+```js
+function
+```
+
+---
+
+^ Efficiency three: recursing on children
+
+# Recursing On Children
+
+```js
+
+```
+
+---
+
+# Demo: stepping through the reconciler
 
 ---

@@ -34,6 +34,9 @@ Challenge: stateful programming
 - Reconcilliation
   - Changing the react tree
   - EXAMPLE: throwaway the tree
-- Fiber Objects
+  - EXAMPLE: keeping the same DOM node
+  - EXAMPLE: using the same component instance
+  - DEMO: stepping through the reconciller
 
+Fiber Objects
 End
