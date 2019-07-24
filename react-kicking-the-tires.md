@@ -20,7 +20,7 @@ Analogies can be useful for conceptualizing complexity
 
 - Closures are like mailing a package
 - Reducers are like a coffee maker
-- Generators are like running restaurant
+- Generators are like running a restaurant
 
 ---
 
@@ -36,7 +36,6 @@ Analogies can be useful for conceptualizing complexity
 ^ 4: counter variable is assigned and the `innerFunc` is created in the local execution context
 ^ 5: local execution context is deleted, control is returned to the calling context, `createCounter` returns the `innerFunc` function which has access to the variables that were in scope when it was called
 ^ 6: calling `increment` creates a local execution context, retrieves the count variable from it's closure, sets it's value to one, and returns it before local execution context is deleted
-^ 8: rinse and repeat
 
 ```js
 function createCounter() {
@@ -63,7 +62,7 @@ const plusTwo = increment(); // 2
 
 # What is the DOM?
 
-^ Note that while an HTML Abstract Syntax Tree is not equivalent to the DOM representation it's illustrative
+^ Note: while an HTML Abstract Syntax Tree is not equivalent to the DOM representation it's illustrative
 
 - The DOM is an in memory abstraction of structured text
 - Provides an interface for traversing and modifying nodes
@@ -76,7 +75,6 @@ document.createElement("div");
 {
   "name": "div",
   "children": [],
-  ...
 }
 ```
 
@@ -92,9 +90,9 @@ document.createElement("div");
 
 ^ Admin Next problems with load performance, interaction performance, conventions, and developer experience
 
-- Lots of DOM interactions that must immediately be reflected in the UI
+- Lots of DOM interactions to be reflected immediately in the UI
 - Frequent data changing over time
-- User interaction that affects many other components in the UI
+- User interaction that affect many other components in the UI
 
 [.footer: [Foundational problems with Admin Next architecture](https://docs.google.com/document/d/1Z2lYsfX3oxytG4QNGaW6X83Z52Zz-jsrUFXp1zRGVpA)]
 
@@ -124,7 +122,7 @@ Best practices for dealing with DOM state:
 
 ^ Valuable because it allows you to build apps without thinking about state
 
-^ For now we'll think of the Virtual DOM as being a tree of React elements
+^ For now we'll think of the Virtual DOM as being a tree of React elements but also be aware that React has it's own internal objects called fibers to hold additional information about the component tree that are considered part of the virtual dom implementation
 
 The Virtual DOM is an abstraction of the HTML DOM with the following characteristics:
 
@@ -179,6 +177,8 @@ React.createElement("button", {
 }, "Click me"));
 ```
 
+[.footer: [Try it out for yourself using the Babel REPL](https://babeljs.io/repl)]
+
 ---
 
 ^ Components take one argument — an object hash containing props
@@ -196,10 +196,10 @@ function Card({showTitle, children}) {
   }
 
   return (
-    <>
+    <div>
       {title}
       {children}
-    </>
+    </div>
   );
 }
 ```
@@ -248,7 +248,7 @@ Components encapsulate element trees:
 
 ```js
 ReactDOM.render(
-  <button className="primary" />,
+  <PolarisButton color="primary" />,
   document.getElementById('app')
 );
 ```
@@ -256,7 +256,7 @@ ReactDOM.render(
 ```js
 // ReactDOM renderer is effectively doing this
 let domNode = document.createElement('button');
-domNode.className = 'primary';
+domNode.className = 'button-primary';
 
 domContainer.appendChild(domNode);
 ```
@@ -288,36 +288,64 @@ domContainer.appendChild(domNode);
 
 ---
 
-^ Efficiency one: React looks at the attributes of both, keeps the same underlying DOM node, and only updates the changed attributes
+^ Efficiency one: For DOM nodes we only need to update the changed attributes
+^ Efficiency two: the instance stays the same when the component updates (state is maintained across renders)
 
-# DOM elements of the same type
-
-```js
-
-```
-
----
-
-^ Efficiency one: keep the same underlying DOM node and only update the changed attributes
-
-# DOM elements of the same type
+# Efficiencies
 
 ```js
-function
+// doesn't destroy this instance when props change
+function PolarisButton({color}) {
+  const className = `button button-${color}`;
+
+  // doesn't destroy this DOM node when attributes change
+  return <button className={className}>Click me</button>;
+}
+
+let domNode = document.createElement('button');
+domNode.className = 'button button-primary';
+domContainer.appendChild(domNode);
+
+domNode.className = 'button button-secondary';
+domContainer.appendChild(domNode);
 ```
 
 ---
 
 ^ Efficiency three: recursing on children
 
-# Recursing On Children
+^ Keys help React identify which items have changed, added, or removed
+
+^ Without keys updating the order of component children will cause React to mutate every child
+
+# Efficiencies cont'd
 
 ```js
+function Card({title, buttons}) {
+  const eachButton = buttons.map(({id, content, color}) => {
+    return (
+      <PolarisButton key={id} color={color}>
+        {content}
+      </PolarisButton>
+    );
+  });
 
+  ...
+}
 ```
 
 ---
 
-# Demo: stepping through the reconciler
+^ So now that we understand a little bit about JSX,
+
+# Demo: stepping through `ReactChildReconciler`
 
 ---
+
+# The end... well kind of
+
+- [Thinking in React](https://reactjs.org/docs/thinking-in-react.html)
+- [Hooks API Reference](https://reactjs.org/docs/hooks-reference.html)
+- [Inversion of control: letting React call your functions](https://overreacted.io/react-as-a-ui-runtime/#inversion-of-control)
+- [Batching state updates](https://overreacted.io/react-as-a-ui-runtime/#batching)
+- [Fiber: the render phase work loop and the commit phase](https://medium.com/react-in-depth/inside-fiber-in-depth-overview-of-the-new-reconciliation-algorithm-in-react-e1c04700ef6e)
