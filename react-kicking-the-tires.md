@@ -336,7 +336,13 @@ function Card({title, buttons}) {
 
 ---
 
-^ So now that we understand a little bit about JSX,
+^ So now we understand a little bit about JSX, the Virtual DOM concept of constructing ReactElement trees, keys, and reconciliation let's read JavaScript as React would interpret it
+
+^ 1. React iterates through the new set of children (`nextChildren`)
+^ 2. React checks whether there is an old child (`prevChildren`) that has the same key as the new child. If an explicit key is not provided, React uses its position. [getComponentKey source]
+^ 3. If there is no new child with the same key as an old child, the old child is unmounted.
+^ 4. If there is no old child with the same key as a new child, the new child is mounted.
+^ 5. If there is an old and new child with the same key, we use shouldUpdateReactComponent to decide whether we should update the instance vs doing a clean unmount/mount
 
 # Demo: stepping through `ReactChildReconciler`
 
