@@ -1,0 +1,19 @@
+# https://development.shopify.io/tools/dev/railgun/Railgun-Config
+name: react-kicking-the-tires
+
+vm:
+  image:      /opt/dev/misc/railgun-images/default
+  ip_address: 192.168.64.253
+  memory:     2G
+  cores:      2
+
+volumes:
+  root:  '2G'
+
+services:
+  - redis
+  - nginx
+
+hostnames:
+  - react-kicking-the-tires.myshopify.io: { proxy_to_host_port: 38622 }
+

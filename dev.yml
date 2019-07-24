@@ -1,0 +1,17 @@
+name: react-kicking-the-tires
+
+type: node
+
+up:
+  - node:
+      version: v10.16.0
+      yarn: true
+      packages:
+        - .
+        # - path/to/other/package
+
+commands:
+  # console:
+  # server:
+  # build:
+  test: yarn test

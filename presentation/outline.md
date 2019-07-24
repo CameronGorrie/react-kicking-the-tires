@@ -38,5 +38,4 @@ Challenge: stateful programming
   - EXAMPLE: using the same component instance
   - DEMO: stepping through the reconciller
 
-Fiber Objects
 End
