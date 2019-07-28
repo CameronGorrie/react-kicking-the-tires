@@ -6,36 +6,74 @@ theme: Simple, 3
 
 ## Cameron Gorrie
 
-^ This talk is going to focus on web development, so it's going to be renderer centric (ReactDOM heavy)
+^ This is a casual introduction so kick your feet up
 
-^ But I hope from the renderer perspective you'll get some good insight into Reactive programming concepts that will be relevant in the subsequent talks
+^ This talk is web dev focused so I'm going to be talking about ReactDOM renderer we'll learn about other renderers like React Native in the other talks!
 
 ---
 
-^ I find learning really difficult, it can take me a long time to wrap my head around a concept but when I do feels great and I want to share it with others. I've found that analogy doesn't give me the a-ha! moment that I'm craving when learning something new
+^ 30 years of manufacturing, virtually unchanged
 
-^ I'm going to try and avoid broader analogies and instead take the perspective of React as a programming runtime and dig into some of the internals; invariably I am going to be hypocritical (i.e. describing data as a tree structure)
+^ It's heavy, slow, burns oil like Kuwait in '91, poor bore quality control, a strange wiring harness, a faulty adjuster lever, awful brakes, weak subframe bolts... the list goes on
+
+^ It truly isn't great at anything, except that it can do just about everything. -- Blackheart58
+
+![](./assets/klr.jpg)
+
+# This is a 2006 KLR650
+
+---
+
+^ The KLR is great because unlike expensive beautiful bikes you don't feel bad about tinkering with it
+
+^ Motorcycles are complex machines to maintain, you can start with analogy or metaphor to describe the system holistically, and gradually learn the subsystems in more detail
+
+![](./assets/klr-tear-down.jpg)
+
+> On any mechanical repair job ego comes in for rough treatment. You're always being fooled, you're always making mistakes, and a mechanic who has a big ego to defend is at a terrific disadvantage.
+-- Robert M. Pirsig, Zen and the Art of Motorcycle Maintenance
+
+---
+
+^ For me analogies don't stick, they have limited use when learning a system
+
+^ I find learning really difficult, my a-ha! moments are few and far between, and the whole thing is painful and arduous
+
+^ Take the perspective of React as a programming runtime, look at some broad concepts, and use those to dig into some of the internals
+
+^ I am going to be hypocritical (i.e. describing data as a tree structure)
 
 Analogies can be useful for conceptualizing complexity
 
 - Closures are like mailing a package
-- Reducers are like a coffee maker
+- Reducers are like making a coffee
 - Generators are like running a restaurant
 
+<!--
 ---
 
 # A-HA! moments
 
-^ Execution model, mapping features of the execution context to places in the codebase
-
-^ Reading JavaScript as the engine would interpret it
+^ Thinking in terms of an execution model, reading JavaScript as the engine would interpret it
 
 ^ 1: `createCounter` and `increment` are declared and created in the global execution context
+
 ^ 2: `createCounter` is called and it's return value is assigned to `increment`
+
 ^ 3: calling `createCounter` creates a local execution context
-^ 4: counter variable is assigned and the `innerFunc` is created in the local execution context
+
+^ 4: counter variable is assigned and the `innerFunc` is created in that local execution context
+
 ^ 5: local execution context is deleted, control is returned to the calling context, `createCounter` returns the `innerFunc` function which has access to the variables that were in scope when it was called
+
 ^ 6: calling `increment` creates a local execution context, retrieves the count variable from it's closure, sets it's value to one, and returns it before local execution context is deleted
+
+[.code-highlight: all]
+[.code-highlight: 1, 10]
+[.code-highlight: 10]
+[.code-highlight: 2-3]
+[.code-highlight: 4, 10]
+[.code-highlight: 11]
 
 ```js
 function createCounter() {
@@ -55,23 +93,26 @@ const plusTwo = increment(); // 2
 ---
 
 # Why React?
+^ We need to understand the DOM, and the historical challenges web developers have faced
 
-^ To understand that we need to understand the DOM, and the historical challenges web developers have faced
+-->
 
 ---
 
-# What is the DOM?
+# Intro to the DOM
 
-^ Note: while an HTML Abstract Syntax Tree is not equivalent to the DOM representation it's illustrative
+[.build-lists: false]
 
-- The DOM is an in memory abstraction of structured text
+^ Note: while AST is not equivalent to the DOM representation it's illustrative
+
+The DOM is an in memory abstraction of structured text.
+
 - Provides an interface for traversing and modifying nodes
 - Nodes have their own properties and may also contain child nodes
 
 ```js
 document.createElement("div");
 
-// Naive DOM representation
 {
   "name": "div",
   "children": [],
@@ -80,29 +121,29 @@ document.createElement("div");
 
 ---
 
-# The DOM has historically been used to store state
-
 ^ And this has caused all sorts of problems
+
+# The DOM has historically been used to store state
 
 ---
 
-# Why React @Shopify?
+# Shopify Admin and the DOM
 
-^ Admin Next problems with load performance, interaction performance, conventions, and developer experience
+^ Turbograft for server side partial page replacements and Twine for direct DOM manipulation
+
+^ No way for components to coordinate how they read and write from the DOM
+
+^ Lots of JavaScript written in HTML attributes (difficult to test, stored in global context)
 
 - Lots of DOM interactions to be reflected immediately in the UI
 - Frequent data changing over time
-- User interaction that affect many other components in the UI
+- User interactions that affect many other components in the UI
 
-[.footer: [Foundational problems with Admin Next architecture](https://docs.google.com/document/d/1Z2lYsfX3oxytG4QNGaW6X83Z52Zz-jsrUFXp1zRGVpA)]
+[.footer: [UI architecture problems](https://docs.google.com/document/d/1Z2lYsfX3oxytG4QNGaW6X83Z52Zz-jsrUFXp1zRGVpA)]
 
 ---
 
-^ Low level DOM operations are stateful and are written in an imperative manner
-
-^ Our program needs to keep track of preceding events
-
-^ Having state in your program is never simple. Anytime we want to dynamically change the content of the page we modify the DOM. To keep application state in both your program and the DOM adds complexity
+^ Having state in our programs is never simple. Anytime we want to dynamically change the content of the page we modify the DOM. To keep application state in both our program and the DOM adds complexity
 
 Best practices for dealing with DOM state:
 
@@ -114,20 +155,20 @@ Best practices for dealing with DOM state:
 
 ---
 
-# What is the Virtual DOM?
+# Intro to the Virtual DOM
+
+^ React's killer feature was the virtual DOM because it makes coding UI so much easier
+
+^ Instead of telling the browser to go from the previous version of our app to the next version, we tell React what we want our next state to look like and have it figure it out for us, it's declarative inversion of control
 
 ^ We should think of it as more of a pattern than a specific technology
 
-^ Conceptually it is a tree of objects representing the user interface
-
-^ Valuable because it allows you to build apps without thinking about state
-
-^ For now we'll think of the Virtual DOM as being a tree of React elements but also be aware that React has it's own internal objects called fibers to hold additional information about the component tree that are considered part of the virtual dom implementation
+^ Think of the Virtual DOM as a tree of React elements that represent the user interface but also be aware that React has it's own internal objects called fibers that hold additional information about the component tree
 
 The Virtual DOM is an abstraction of the HTML DOM with the following characteristics:
 
 - Detached from the browser-specific implementation details
-- Allows you to build apps without thinking about state transitions
+- Allows us to build apps without thinking about state transitions
 
 [.footer: [Attribute differences between DOM & VDOM in React](https://reactjs.org/docs/dom-elements.html#differences-in-attributes)]
 
@@ -139,45 +180,18 @@ The Virtual DOM is an abstraction of the HTML DOM with the following characteris
 
 In React the Virtual DOM nodes are `ReactElement`s, plain JavaScript objects that function as atomic building blocks
 
+[.code-highlight: all]
+[.code-highlight: 2]
+
 ```js
 {
-  type: 'Card', // function type denotes a React component
+  type: 'button', // string type denotes a DOM node (props correspond to attributes)
   props: {
-    title: 'Hello world'
-    children: [{
-      type: 'button', // string type denotes a DOM node (props correspond to attributes)
-      props: {
-        className: 'primary',
-        children: 'Click me',
-      }
-    }]
+    className: 'primary',
+    children: 'Click me',
   }
 }
 ```
-
----
-
-# A brief foray into JSX
-
-^ JSX is syntatic sugar that once compiled becomes a regular JavaScript function call that evaluates to a JavaScript object
-
-```html
-<Card title="Hello world">
-  <button className="primary">Click me</button>
-</Card>
-```
-
-```js
-// compiles to
-React.createElement(Card, {
-  title: "Hello world"
-},
-React.createElement("button", {
-  className: "primary"
-}, "Click me"));
-```
-
-[.footer: [Try it out for yourself using the Babel REPL](https://babeljs.io/repl)]
 
 ---
 
@@ -186,6 +200,9 @@ React.createElement("button", {
 ^ Components are pure in respect to their props; local mutation is fine
 
 `ReactComponent`'s are small, reusable pieces of code that return `ReactElement`'s
+
+[.code-highlight: all]
+[.code-highlight: 2, 5]
 
 ```js
 function Card({showTitle, children}) {
@@ -212,13 +229,15 @@ function Card({showTitle, children}) {
 
 ^ React repeats this process until it has a representation of the underlying DOM tag elements for every component on the page
 
-^ Objects are for illustrative purpose, there are other properties and symbols `$$typeof` (JSON can't include `Symbol()`, stops XSS attacks)
-
 Components encapsulate element trees:
+
+[.code-highlight: all]
+[.code-highlight: 2]
+[.code-highlight: 6-13]
 
 ```js
 {
-  type: PolarisButton, // ReactComponent type: evaluate the returned ReactElement
+  type: PolarisButton, // Function type denotes a ReactComponent: evaluate the returned ReactElement
   props: {color: 'primary', children: 'Click me'}
 }
 
@@ -236,11 +255,35 @@ Components encapsulate element trees:
 
 ---
 
+# A brief foray into JSX
+
+^ JSX is syntatic sugar that once compiled becomes a regular JavaScript function call that evaluates to a JavaScript object
+
+```html
+<Card title="Hello world">
+  <button className="primary">Click me</button>
+</Card>
+```
+
+```js
+// compiles to
+React.createElement(Card, {
+  title: "Hello world"
+},
+React.createElement("button", {
+  className: "primary"
+}, "Click me"));
+```
+
+[.footer: [Try it out using the Babel REPL](https://babeljs.io/repl)]
+
+---
+
 # Renderer entry point
 
 ^ We've established that React programs construct a virtual DOM tree that may change over time
 
-^ We want to output our virtual DOM somewhere, in the case of React DOM we want to inject our virtual DOM into the real one
+^ Using React DOM we want to transform our real DOM to match our virtual one
 
 ```html
 <div id="app"></div>
@@ -265,33 +308,43 @@ domContainer.appendChild(domNode);
 
 # How do we make changes in our application?
 
+^ Recap what we've learned:
+
 ^ When a component receives props as an input, it is because a particular parent component returned an element with its type and props
 
 ^ Props flow one way in React: from parents to children
 
 ^ A component cannot change its props, but it can change its state
 
-^ Changes to props i.e. fetching from network and passing data as props to child component
+^ Examples:
 
-^ Changes to state i.e. checkbox is checked
+^ (props) i.e. fetching from network and passing data as props to child component
+
+^ (state) i.e. checkbox is checked
 
 ---
 
-^ In our case the host instance tree is the DOM
+^ State and/or prop changes in our component will return a different tree of React elements
 
-^ State and/or prop changes in your component function will return a different tree of React elements
+^ We want to compare the current element tree state to our desired state
 
-^ A simplified version of React could blow away the existing tree and re-create it from scratch. This is slow and would lose DOM state (focus, selection)
+^ A simplified version of React could blow away the existing tree and re-create it from scratch but this would be slow and we'd lose DOM state (focus, selection)
 
 > The process of figuring out what to do to the host instance tree in response to new information is sometimes called reconciliation.
 -- Dan Abramov
 
 ---
 
-^ Efficiency one: For DOM nodes we only need to update the changed attributes
-^ Efficiency two: the instance stays the same when the component updates (state is maintained across renders)
+^ Efficiency one: the instance stays the same when the component updates (state is maintained across renders)
 
-# Efficiencies
+^ Efficiency two: For DOM nodes we only need to update the changed attributes
+
+# Reconciler Efficiencies
+
+[.code-highlight: all]
+[.code-highlight: 1, 2, 5, 6]
+[.code-highlight: 9-11]
+[.code-highlight: 13,14]
 
 ```js
 // doesn't destroy this instance when props change
@@ -314,11 +367,14 @@ domContainer.appendChild(domNode);
 
 ^ Efficiency three: recursing on children
 
-^ Keys help React identify which items have changed, added, or removed
+^ (Unshift) Updating the order of component children will cause React to mutate every child
 
-^ Without keys updating the order of component children will cause React to mutate every child
+^ Keys help React identify which items have been changed, added, or removed
 
-# Efficiencies cont'd
+# Reconciler Efficiencies cont'd
+
+[.code-highlight: all]
+[.code-highlight: 4]
 
 ```js
 function Card({title, buttons}) {
@@ -336,22 +392,22 @@ function Card({title, buttons}) {
 
 ---
 
-^ So now we understand a little bit about JSX, the Virtual DOM concept of constructing ReactElement trees, keys, and reconciliation let's read JavaScript as React would interpret it
+^ So now we understand a little bit about JSX, the Virtual DOM concept of constructing ReactElement trees, keys, and reconciliation let's take apart a subsystem of React like we would our KLR650
 
-^ 1. React iterates through the new set of children (`nextChildren`)
-^ 2. React checks whether there is an old child (`prevChildren`) that has the same key as the new child. If an explicit key is not provided, React uses its position. [getComponentKey source]
-^ 3. If there is no new child with the same key as an old child, the old child is unmounted.
-^ 4. If there is no old child with the same key as a new child, the new child is mounted.
-^ 5. If there is an old and new child with the same key, we use shouldUpdateReactComponent to decide whether we should update the instance vs doing a clean unmount/mount
+^ Water pump anecdote
 
-# Demo: stepping through `ReactChildReconciler`
+^ 1. `executeDispatch`
+
+![](./assets/klr-water-pump.gif)
+
+# Where the Reconciler meets the Renderer
 
 ---
 
 # The end... well kind of
 
-- [Thinking in React](https://reactjs.org/docs/thinking-in-react.html)
-- [Hooks API Reference](https://reactjs.org/docs/hooks-reference.html)
-- [Inversion of control: letting React call your functions](https://overreacted.io/react-as-a-ui-runtime/#inversion-of-control)
+[.build-lists: false]
+
+- [Inversion of control: letting React call our functions](https://overreacted.io/react-as-a-ui-runtime/#inversion-of-control)
 - [Batching state updates](https://overreacted.io/react-as-a-ui-runtime/#batching)
 - [Fiber: the render phase work loop and the commit phase](https://medium.com/react-in-depth/inside-fiber-in-depth-overview-of-the-new-reconciliation-algorithm-in-react-e1c04700ef6e)

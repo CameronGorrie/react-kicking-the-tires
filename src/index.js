@@ -11,7 +11,9 @@ function Card({ title, button: {content, color}}) {
   return (
     <>
       <h1>{title}</h1>
-      <PolarisButton color={color} count={() => setCount(count + 1)}>
+      <PolarisButton color={color} count={() => {
+        return setCount(count + 1)
+      }}>
         <span>{content} {count}</span>
       </PolarisButton>
     </>
